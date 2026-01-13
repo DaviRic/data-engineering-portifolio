@@ -93,6 +93,7 @@ def amazon_sales_etl():
             credentials=credentials,
             if_exists='replace'
         )
+        return target_table
     
     # Fluxo de dependências
     bronze_table = ingest_data_to_bigquery()
