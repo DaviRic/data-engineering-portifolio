@@ -58,7 +58,7 @@ def amazon_sales_etl():
     # --------------------------------------------------
     # TASK 2: Camada Silver (Transform & Cleaning)
     # --------------------------------------------------
-    @task
+    @task()
     def transform_to_silver(source_table_id):
         key_path = "/opt/airflow/data/service_account.json"
         credentials = service_account.Credentials.from_service_account_file(key_path)
@@ -94,7 +94,53 @@ def amazon_sales_etl():
             if_exists='replace'
         )
         return target_table
-    
+
+    @task()
+    def create_gold_metrics(silver_table_id):
+        key_path = "/opt/airflow/data/service_account.json"
+        credentials = service_account.Credentials.from_service_account_file(key_path)
+        project_id = credentials.project_id
+        table_target = f"{project_id}.amazon_sales.gold_daily_sales"
+
+        print(f"Lendo dados da Silver para agregação...")
+        query = f"SELECT * FROM `{silver_table_id}`"
+        df = pd.gbq(query, project_id=project_id, credentials=credentials)
+        
+        date_col = 'orderdate'
+        cat_col = 'category'
+        amount_col = 'quantity'
+
+        # Agrupamento: vendas por dia e categoria
+        print("Calculando KPIs diários...")
+
+        df_gold = df.groupby([date_col, cat_col]).agg({
+            amount_col: 'sum',  # Soma o total de vendas
+            'order_id': 'count' # Contagem de pedidos
+        }).reset_index()
+
+        # Para melhorar a estética do dashboard
+        df_gold.rename(columns = {
+            amount_col: 'total_revenue',
+            'order_id': 'total_orders'
+        })
+
+        # Criando métrica derivada: Ticket Médio
+        df_gold['average_ticket'] = df_gold['total_revenue']/df_gold['total_orders']
+
+        # Arredondando valores
+        df_gold['total_revenue'] = df_gold['total_revenue'].round(2)
+        df_gold['average_ticket'] = df_gold['average_ticket'].round(2)
+        
+        print(f"Gerada tabela Gold com {len(df_gold)} linhas de resumo.")
+
+        # Enviando dados para o BigQuery
+        df_gold.to_gbq(
+            destination_table=table_target,
+            project_id=project_id,
+            credentials=credentials,
+            if_exists='replace'
+        )
+
     # Fluxo de dependências
     bronze_table = ingest_data_to_bigquery()
     transform_to_silver(bronze_table)
