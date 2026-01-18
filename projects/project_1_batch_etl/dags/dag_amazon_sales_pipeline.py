@@ -100,42 +100,56 @@ def amazon_sales_etl():
         key_path = "/opt/airflow/data/service_account.json"
         credentials = service_account.Credentials.from_service_account_file(key_path)
         project_id = credentials.project_id
-        table_target = f"{project_id}.amazon_sales.gold_daily_sales"
+        target_table = f"{project_id}.amazon_sales.gold_daily_sales"
 
         print(f"Lendo dados da Silver para agregação...")
         query = f"SELECT * FROM `{silver_table_id}`"
-        df = pd.gbq(query, project_id=project_id, credentials=credentials)
+        df = pd.read_gbq(query, project_id=project_id, credentials=credentials)
         
         date_col = 'orderdate'
         cat_col = 'category'
         amount_col = 'quantity'
+        status_col = 'orderstatus'
 
-        # Agrupamento: vendas por dia e categoria
+        # --- Cálculo da Receita Líquida ---
+        # Status: Delivered, Cancelled, Shipped, Returned
+        # Vendas válidas são as que não são 'Cancelled' e nem 'Returned'
+        if status_col in df.columns:
+            print("Aplicando filtro de status para Receita Líquida.")
+            valid_statuses = ['Shipped', 'Delivered', 'Completed']
+
+            df['net_amount'] = df.apply(
+                lambda row: row[amount_col] if row[status_col] in valid_statuses else 0,
+                axis=1
+            )
+        else:
+            df['net_amount'] = df[amount_col] # Se não tem status, então tudo é válido
+        
         print("Calculando KPIs diários...")
 
         df_gold = df.groupby([date_col, cat_col]).agg({
-            amount_col: 'sum',  # Soma o total de vendas
-            'order_id': 'count' # Contagem de pedidos
+            amount_col: 'sum',
+            'net_amount':'sum',
+            'orderid': 'count'
         }).reset_index()
 
-        # Para melhorar a estética do dashboard
-        df_gold.rename(columns = {
-            amount_col: 'total_revenue',
-            'order_id': 'total_orders'
-        })
+        # Renomeando
+        df_gold.rename(columns={
+            amount_col:'gross_revenue',
+            'orderid':'total_orders'
+        }, inplace=True)
 
-        # Criando métrica derivada: Ticket Médio
-        df_gold['average_ticket'] = df_gold['total_revenue']/df_gold['total_orders']
+        # KPIs derivados
+        # Ticket médio (geralmente baseado na receita bruta para vendas)
+        df_gold['average_ticket'] = df_gold['gross_revenue']/df_gold['total_orders']
 
-        # Arredondando valores
-        df_gold['total_revenue'] = df_gold['total_revenue'].round(2)
-        df_gold['average_ticket'] = df_gold['average_ticket'].round(2)
-        
-        print(f"Gerada tabela Gold com {len(df_gold)} linhas de resumo.")
+        cols_to_round = ['gross_revenue', 'net_amount', 'average_ticket']
+        df_gold[cols_to_round] = df_gold[cols_to_round].round(2)
 
-        # Enviando dados para o BigQuery
+        print(f"Camada Gold gerada com {len(df_gold)} linhas.")
+
         df_gold.to_gbq(
-            destination_table=table_target,
+            destination_table=target_table,
             project_id=project_id,
             credentials=credentials,
             if_exists='replace'
@@ -143,7 +157,8 @@ def amazon_sales_etl():
 
     # Fluxo de dependências
     bronze_table = ingest_data_to_bigquery()
-    transform_to_silver(bronze_table)
+    silver_table = transform_to_silver(bronze_table)
+    create_gold_metrics(silver_table)
 
 # Instância da DAG
 main_dag = amazon_sales_etl()
