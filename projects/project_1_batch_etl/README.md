@@ -30,3 +30,5 @@ O dashboard final (integrado ao BigQuery) permite a análise de:
 4. Configure sua `service_account.json` do Google Cloud na pasta `/data`.
 5. Execute `docker-compose up --build`.
 6. Acesse o Airflow em `localhost:8080` e dispare a DAG `amazon_sales_pipeline`.
+
+<img width="969" height="843" alt="image" src="https://github.com/user-attachments/assets/a0934036-7cf7-4058-9cae-130a4ad9f40f" />
