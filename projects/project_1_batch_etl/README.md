@@ -32,6 +32,6 @@ O dashboard final (integrado ao BigQuery) permite a análise de:
 6. Acesse o Airflow em `localhost:8080` e dispare a DAG `amazon_sales_pipeline`.
 
 ## Dashboard
-[🔗Clique aqui para acessar o dashboard](https://lookerstudio.google.com/reporting/53980437-e27c-4825-b56e-058626fdb02e/page/C3blF)
+[🔗 Clique aqui para acessar o dashboard](https://lookerstudio.google.com/reporting/53980437-e27c-4825-b56e-058626fdb02e/page/C3blF)
 
 <img width="757" height="683" alt="image" src="https://github.com/user-attachments/assets/61273eae-5862-48d9-a2d1-dc0001b35895" />
