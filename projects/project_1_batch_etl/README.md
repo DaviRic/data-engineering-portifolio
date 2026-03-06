@@ -25,6 +25,8 @@ O dashboard final (integrado ao BigQuery) permite a análise de:
 
 ## Como Reproduzir
 1. Clone o repositório.
-2. Configure sua `service_account.json` do Google Cloud na pasta `/data`.
-3. Execute `docker-compose up --build`.
-4. Acesse o Airflow em `localhost:8080` e dispare a DAG `amazon_sales_pipeline`.
+2. Baixe a base de dados neste link: https://www.kaggle.com/datasets/rohiteng/amazon-sales-dataset/data
+3. Dentro da pasta "project_1_batch_etl" crie a pasta "data" e coloque dentro dela o dataset baixado.
+4. Configure sua `service_account.json` do Google Cloud na pasta `/data`.
+5. Execute `docker-compose up --build`.
+6. Acesse o Airflow em `localhost:8080` e dispare a DAG `amazon_sales_pipeline`.
