@@ -1,8 +1,10 @@
 import pandas as pd
 import requests
 from google.cloud import bigquery
-from dotenv import load_dotenv # type: ignore
+from dotenv import load_dotenv
 import os
+
+load_dotenv()
 
 JSON_KEY_PATH = os.getenv("JSON_KEY_PATH") # O mesmo que eu coloquei no dbt
 PROJECT_ID = os.getenv("PROJECT_ID") # ID que eu coloquei no bigquery
@@ -36,7 +38,7 @@ def load_to_bigquery(data):
     table_ref = f"{PROJECT_ID}.{DATASET_ID}.{TABLE_ID}"
 
     # Determinando qual tipo de inserção eu vou fazer: se é append ou substituição (no meu caso é append)
-    job_config = bigquery.LoadJobConfig(write_description="WRITE_TRUNCATE")
+    job_config = bigquery.LoadJobConfig(write_disposition="WRITE_TRUNCATE")
 
     # Eu passo usando o client pois é nele que estão as minhas credenciais para o Data Warehouse
     job = client.load_table_from_dataframe(df, table_ref, job_config=job_config)
