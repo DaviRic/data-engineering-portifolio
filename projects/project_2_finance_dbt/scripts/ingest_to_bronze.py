@@ -1,12 +1,13 @@
 import pandas as pd
 import requests
 from google.cloud import bigquery
+from dotenv import load_dotenv # type: ignore
 import os
 
-JSON_KEY_PATH = "/home/davicruvel/data-engineering-portifolio/projects/project_1_batch_etl/data/service_account.json" # O mesmo que eu coloquei no dbt
-PROJECT_ID = "" # ID que eu coloquei no bigquery
-DATASET_ID = "crypto_bronze"
-TABLE_ID = "raw_market_data"
+JSON_KEY_PATH = os.getenv("JSON_KEY_PATH") # O mesmo que eu coloquei no dbt
+PROJECT_ID = os.getenv("PROJECT_ID") # ID que eu coloquei no bigquery
+DATASET_ID = os.getenv("DATASET_ID")
+TABLE_ID = os.getenv("TABLE_ID")
 
 def get_crypto_data():
     url = "https://api.coingecko.com/api/v3/coins/markets"
