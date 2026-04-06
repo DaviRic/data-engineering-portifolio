@@ -1,0 +1,4 @@
+dbt-bigquery==1.7.2
+google-cloud-bigquery
+pandas
+requests
