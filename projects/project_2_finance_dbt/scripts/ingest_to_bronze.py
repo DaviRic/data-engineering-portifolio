@@ -1,7 +1,7 @@
 import pandas as pd
 import requests
 from google.cloud import bigquery
-from dotenv import load_dotenv
+from dotenv import load_dotenv # type: ignore
 import os
 
 load_dotenv()
@@ -33,7 +33,7 @@ def load_to_bigquery(data):
     df = pd.DataFrame(data)
 
     df['ingested_at'] = pd.Timestamp.now()
-
+    
     # Subindo os dados para o BigQuery
     table_ref = f"{PROJECT_ID}.{DATASET_ID}.{TABLE_ID}"
 
@@ -49,3 +49,10 @@ if __name__=="__main__":
     print("Iniciando a extração da CoinGecko")
     raw_data = get_crypto_data()
     load_to_bigquery(raw_data)
+
+"""
+Após a criação desse script, será feito o sources.yml no dbt que serve para abstração de consultas SQL,
+linhagem dos dados, pois o dbt contrói um gráfico visual mostrando de onde o dado veio, sem o sources.yml
+o dbt não sabe que aquela tabela existe no BigQuery, um bônus de poder configurar para avisar se os dados
+da API pararam de chegar e os dados da tabela estão velhos.
+"""
