@@ -1,0 +1,16 @@
+version: 2
+
+sources:
+    - name: coingecko
+      database: your-project-id
+      schema: crypto_bronze # Nome do dataset no bigquery
+      tables:
+        - name: raw_market_data
+          description: "Dados brutos extraídos da API CoinGecko"
+          columns:
+            - name: id
+              description: "Id único da criptomoeda"
+            - name: current_price
+              description: "Preço atual da criptomoeda em USD"
+            - name: market_cap
+              description: "Captalização de mercado"
