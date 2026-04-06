@@ -1,0 +1,14 @@
+finance_crypto_etl:
+  outputs:
+    dev:
+      dataset: crypto_silver
+      job_execution_timeout_seconds: 300
+      job_retries: 1
+      keyfile: /opt/airflow/data/service_account.json
+      location: US
+      method: service-account
+      priority: interactive
+      project: YOUR_PROJECT_HERE
+      threads: 4
+      type: bigquery
+  target: dev
