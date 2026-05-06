@@ -5,14 +5,11 @@ from datetime import datetime, timedelta
 import sys
 import os
 
-# ADICIONA O CAMINHO DO VOLUME AO PYTHON
 sys.path.append('/opt/airflow/scripts')
 
-# AGORA TENTA IMPORTAR
 try:
     from ingest_to_bronze import get_crypto_data, load_to_bigquery # type: ignore
 except ImportError:
-    # Isso evita que a interface do Airflow quebre totalmente se o arquivo sumir
     print("Aguardando montagem do volume de scripts...")
 
 def run_ingestion():
